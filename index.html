@@ -1,0 +1,1203 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>めめトレ！ 楽しく視力UP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap");
+      body {
+        font-family: "Noto Sans JP", sans-serif;
+      }
+      .eyeball {
+        animation: blink 4s infinite;
+      }
+      @keyframes blink {
+        0%,
+        90%,
+        100% {
+          transform: scaleY(1);
+        }
+        95% {
+          transform: scaleY(0.1);
+        }
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .fade-in {
+        animation: fadeIn 0.4s ease-out;
+      }
+      canvas {
+        touch-action: none;
+      }
+      button {
+        min-height: 44px;
+        min-width: 44px;
+      }
+      .timer-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #0ea5e9 0%, #22c55e 100%);
+        color: white;
+      }
+      .timer-circle {
+        position: relative;
+        width: 240px;
+        height: 240px;
+      }
+      .timer-circle svg {
+        transform: rotate(-90deg);
+      }
+      .timer-number {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 72px;
+        font-weight: 900;
+      }
+      .score-bar {
+        height: 28px;
+        border-radius: 6px;
+        transition: width 0.5s ease;
+        min-width: 4px;
+      }
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 1.5rem !important;
+        }
+        .game-card {
+          padding: 12px !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gradient-to-br from-blue-100 to-green-100 min-h-screen">
+    <div class="max-w-4xl mx-auto p-4 md:p-6">
+      <!-- ヘッダー -->
+      <div class="flex items-center justify-between mb-6 md:mb-8">
+        <div class="flex items-center gap-2 md:gap-3">
+          <span class="text-4xl md:text-5xl eyeball">👁️</span>
+          <h1 class="text-2xl md:text-4xl font-bold text-green-700">
+            めめトレ！
+          </h1>
+          <span class="text-lg md:text-2xl text-green-600 hidden sm:inline"
+            >楽しく視力UP</span
+          >
+        </div>
+        <div
+          onclick="showHome()"
+          class="cursor-pointer text-sm bg-white px-4 py-2 rounded-2xl shadow flex items-center gap-2 hover:shadow-md active:scale-95 transition"
+        >
+          <span>🏠</span><span class="font-medium">ホーム</span>
+        </div>
+      </div>
+
+      <!-- 注意書き -->
+      <div
+        class="bg-amber-100 border border-amber-400 text-amber-800 text-sm p-4 rounded-3xl mb-6 md:mb-8"
+      >
+        ⚠️
+        これは楽しく目を動かすための補助ツールです。老眼・近眼の根本治療ではありません。症状が気になる場合は眼科医に相談してください。
+      </div>
+
+      <!-- ホーム画面 -->
+      <div id="home" class="space-y-6 md:space-y-8 fade-in">
+        <div class="text-center">
+          <h2 class="text-2xl md:text-3xl font-bold mb-2">
+            今日の目トレ、始めよう！ 👀
+          </h2>
+          <p class="text-green-600">
+            老眼＆近眼の方に特におすすめの3つのミニゲーム
+          </p>
+          <div
+            class="mt-4 inline-flex items-center gap-2 bg-white rounded-3xl px-6 py-2 text-sm shadow"
+          >
+            <span class="text-2xl">🔥</span>
+            <span id="streak" class="font-bold">読み込み中…</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          <div
+            onclick="startGame(1)"
+            class="game-card bg-white rounded-3xl shadow-xl p-6 hover:scale-105 transition cursor-pointer active:scale-100"
+          >
+            <div class="text-5xl md:text-6xl mb-4">🏃‍♂️</div>
+            <h3 class="text-lg md:text-xl font-bold mb-1">1. 目で追え！</h3>
+            <p class="text-sm text-gray-600">
+              動く的を目で追いかけて集中力UP<br /><span class="text-green-500"
+                >眼球運動トレーニング</span
+              >
+            </p>
+            <div class="text-xs mt-4 text-green-500">所要30秒</div>
+          </div>
+          <div
+            onclick="startGame(2)"
+            class="game-card bg-white rounded-3xl shadow-xl p-6 hover:scale-105 transition cursor-pointer active:scale-100"
+          >
+            <div class="text-5xl md:text-6xl mb-4">🔍</div>
+            <h3 class="text-lg md:text-xl font-bold mb-1">2. ピント合わせ</h3>
+            <p class="text-sm text-gray-600">
+              遠くと近くを素早く切り替え<br /><span class="text-green-500"
+                >老眼向け調節力トレーニング</span
+              >
+            </p>
+            <div class="text-xs mt-4 text-green-500">所要30秒</div>
+          </div>
+          <div
+            onclick="startGame(3)"
+            class="game-card bg-white rounded-3xl shadow-xl p-6 hover:scale-105 transition cursor-pointer active:scale-100"
+          >
+            <div class="text-5xl md:text-6xl mb-4">🅲</div>
+            <h3 class="text-lg md:text-xl font-bold mb-1">3. ランドルト環</h3>
+            <p class="text-sm text-gray-600">
+              小さくなるCの切れ目の向きを当てる<br /><span
+                class="text-green-500"
+                >視力・コントラスト訓練</span
+              >
+            </p>
+            <div class="text-xs mt-4 text-green-500">所要1分</div>
+          </div>
+        </div>
+
+        <!-- 20-20-20タイマー -->
+        <div
+          class="bg-white rounded-3xl p-4 md:p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6"
+        >
+          <div class="flex-1 text-center sm:text-left">
+            <h3 class="font-bold mb-2">🕒 20-20-20ルールタイマー</h3>
+            <p class="text-sm text-gray-500">
+              20分ごとに20フィート（6m）先を20秒見る
+            </p>
+          </div>
+          <button
+            onclick="start2020Timer()"
+            class="bg-green-600 text-white px-8 py-4 rounded-3xl font-medium hover:bg-green-700 active:scale-95 transition w-full sm:w-auto"
+          >
+            今すぐスタート
+          </button>
+        </div>
+
+        <!-- スコア履歴 -->
+        <div id="scoreHistory" class="hidden">
+          <h3 class="font-bold mb-3 text-green-700">📊 最近のスコア</h3>
+          <div
+            id="scoreBars"
+            class="flex items-end gap-2 h-32 bg-white rounded-2xl p-4 shadow"
+          ></div>
+        </div>
+
+        <button
+          onclick="showTips()"
+          class="w-full py-4 bg-gradient-to-r from-green-400 to-blue-400 text-white rounded-3xl font-medium text-lg active:scale-95 transition"
+        >
+          📌 今日の目トレTipsを見る
+        </button>
+      </div>
+
+      <!-- ゲーム画面 -->
+      <div id="gameScreen" class="hidden fade-in">
+        <div class="flex justify-between items-center mb-4 md:mb-6">
+          <button
+            onclick="endGame()"
+            class="text-gray-500 hover:text-red-500 active:scale-95 transition"
+          >
+            ← やめる
+          </button>
+          <h2 id="gameTitle" class="text-xl md:text-2xl font-bold"></h2>
+          <div
+            id="scoreArea"
+            class="font-mono text-lg md:text-xl font-bold text-green-600"
+          >
+            スコア: <span id="score">0</span>
+          </div>
+        </div>
+        <div
+          id="gameContent"
+          class="bg-white rounded-3xl p-4 md:p-8 min-h-[420px] flex items-center justify-center overflow-hidden"
+        ></div>
+      </div>
+
+      <!-- 結果画面 -->
+      <div id="resultScreen" class="hidden text-center fade-in">
+        <div class="text-7xl mb-6" id="resultEmoji"></div>
+        <h2 id="resultTitle" class="text-2xl md:text-3xl font-bold mb-2"></h2>
+        <p
+          id="resultText"
+          class="text-lg md:text-xl mb-8 whitespace-pre-line"
+        ></p>
+        <button
+          onclick="saveScoreAndReturn()"
+          class="px-10 py-4 bg-green-600 text-white text-xl rounded-3xl hover:bg-green-700 active:scale-95 transition"
+        >
+          ホームに戻る
+        </button>
+      </div>
+
+      <!-- Tips画面 -->
+      <div id="tipsScreen" class="hidden fade-in">
+        <div class="bg-white rounded-3xl p-6 md:p-8">
+          <h2 class="text-2xl font-bold mb-6">👀 今日の目トレTips</h2>
+          <ul class="space-y-6 text-sm">
+            <li>・パーミング：両手で目を覆って30秒暗くする（超リラックス）</li>
+            <li>・まばたきを意識的に増やす（ドライアイ防止）</li>
+            <li>・遠くの景色を5秒以上じっくり見る</li>
+            <li>・スマホは顔から30cm以上離す</li>
+          </ul>
+          <button
+            onclick="showHome()"
+            class="mt-8 w-full py-4 bg-gray-100 rounded-3xl active:scale-95 transition"
+          >
+            ホームに戻る
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      tailwind.config = { content: ["./**/*.html"] };
+
+      let currentGame = 0;
+      let score = 0;
+
+      // =============================================
+      // 画面遷移
+      // =============================================
+      function showScreen(id) {
+        ["home", "gameScreen", "resultScreen", "tipsScreen"].forEach((s) => {
+          document.getElementById(s).classList.toggle("hidden", s !== id);
+        });
+      }
+      function showHome() {
+        showScreen("home");
+        updateHomeStats();
+      }
+      function showTips() {
+        showScreen("tipsScreen");
+      }
+
+      // =============================================
+      // サウンドエフェクト（Web Audio API）
+      // =============================================
+      let audioCtx = null;
+      function getAudioCtx() {
+        if (!audioCtx)
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        return audioCtx;
+      }
+      function playTone(freq, dur, type = "sine", vol = 0.15) {
+        try {
+          const ctx = getAudioCtx();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = type;
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(vol, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + dur);
+        } catch (e) {}
+      }
+      function playCorrect() {
+        playTone(523, 0.15);
+        setTimeout(() => playTone(659, 0.18), 100);
+      }
+      function playWrong() {
+        playTone(220, 0.2, "sawtooth", 0.1);
+      }
+      function playClick() {
+        playTone(800, 0.04, "square", 0.06);
+      }
+      function playComplete() {
+        playTone(523, 0.2);
+        setTimeout(() => playTone(659, 0.2), 150);
+        setTimeout(() => playTone(784, 0.3), 300);
+      }
+      function playTick() {
+        playTone(1200, 0.03, "sine", 0.05);
+      }
+
+      // =============================================
+      // ゲーム開始
+      // =============================================
+      function startGame(n) {
+        playClick();
+        currentGame = n;
+        score = 0;
+        showScreen("gameScreen");
+        const title = document.getElementById("gameTitle");
+        document.getElementById("score").textContent = "0";
+
+        if (n === 1) {
+          title.textContent = "🏃‍♂️ 目で追え！";
+          startTrackingGame();
+        } else if (n === 2) {
+          title.textContent = "🔍 ピント合わせ";
+          startFocusGame();
+        } else if (n === 3) {
+          title.textContent = "🅲 ランドルト環";
+          startLandoltGame();
+        }
+      }
+
+      // =============================================
+      // ゲーム1: 目で追え！（改善版）
+      // =============================================
+      function startTrackingGame() {
+        const root = document.getElementById("gameContent");
+        const scoreEl = document.getElementById("score");
+        root.innerHTML = "";
+
+        const canvas = document.createElement("canvas");
+        canvas.className =
+          "block w-full max-w-[600px] rounded-xl border border-rose-200 bg-rose-50 shadow-lg select-none";
+        canvas.style.touchAction = "none";
+        root.appendChild(canvas);
+        const ctx = canvas.getContext("2d");
+
+        const s = {
+          raf: 0,
+          start: 0,
+          last: 0,
+          run: true,
+          done: false,
+          w: 0,
+          h: 0,
+          dpr: 1,
+          total: 0,
+          hit: 0,
+          trail: [],
+          ptr: { x: 0, y: 0, on: false },
+          tgt: { x: 0, y: 0, dx: 0.7, dy: 0.7, r: 22 },
+        };
+        const dur = 30000,
+          trailN = 16,
+          pad = 16;
+        const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+        const resize = () => {
+          const cw = clamp(root.clientWidth || 320, 280, 600);
+          const ch = clamp(Math.floor(cw * 0.67), 200, 400);
+          const dpr = Math.max(1, window.devicePixelRatio || 1);
+          s.w = cw;
+          s.h = ch;
+          s.dpr = dpr;
+          canvas.width = cw * dpr;
+          canvas.height = ch * dpr;
+          canvas.style.width = cw + "px";
+          canvas.style.height = ch + "px";
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          s.tgt.x = clamp(s.tgt.x || cw / 2, pad + s.tgt.r, cw - pad - s.tgt.r);
+          s.tgt.y = clamp(
+            s.tgt.y || ch / 2,
+            pad + s.tgt.r + 28,
+            ch - pad - s.tgt.r,
+          );
+        };
+
+        const setPtr = (x, y) => {
+          const r = canvas.getBoundingClientRect();
+          s.ptr.x = ((x - r.left) / r.width) * s.w;
+          s.ptr.y = ((y - r.top) / r.height) * s.h;
+          s.ptr.on = true;
+        };
+
+        const drawBullseye = (x, y, r, alpha, sc) => {
+          const rings = [1, 0.75, 0.5, 0.28, 0.1];
+          const colors = ["#d90429", "#fff", "#d90429", "#fff", "#d90429"];
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          rings.forEach((rr, i) => {
+            ctx.beginPath();
+            ctx.arc(x, y, r * sc * rr, 0, Math.PI * 2);
+            ctx.fillStyle = colors[i];
+            ctx.fill();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "rgba(120,0,0,0.2)";
+            ctx.stroke();
+          });
+          ctx.restore();
+        };
+
+        const draw = (remain) => {
+          ctx.clearRect(0, 0, s.w, s.h);
+          // 背景
+          const bg = ctx.createLinearGradient(0, 0, 0, s.h);
+          bg.addColorStop(0, "#fff7f7");
+          bg.addColorStop(1, "#ffe4e6");
+          ctx.fillStyle = bg;
+          ctx.fillRect(0, 0, s.w, s.h);
+          // 格子
+          ctx.strokeStyle = "rgba(225,29,72,0.06)";
+          ctx.lineWidth = 1;
+          for (let x = 20; x < s.w; x += 20) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, s.h);
+            ctx.stroke();
+          }
+          for (let y = 20; y < s.h; y += 20) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(s.w, y);
+            ctx.stroke();
+          }
+          // 軌跡
+          s.trail.forEach((p, i) => {
+            const t = (i + 1) / s.trail.length;
+            drawBullseye(p.x, p.y, s.tgt.r, t * 0.25, 0.5 + t * 0.4);
+          });
+          // 的
+          ctx.save();
+          ctx.shadowColor = "rgba(217,4,41,0.18)";
+          ctx.shadowBlur = 16;
+          drawBullseye(s.tgt.x, s.tgt.y, s.tgt.r, 1, 1);
+          ctx.restore();
+          // カーソル
+          if (s.ptr.on) {
+            const hit =
+              Math.hypot(s.ptr.x - s.tgt.x, s.ptr.y - s.tgt.y) <= s.tgt.r + 6;
+            ctx.save();
+            ctx.strokeStyle = hit
+              ? "rgba(22,163,74,0.9)"
+              : "rgba(71,85,105,0.8)";
+            ctx.fillStyle = hit
+              ? "rgba(22,163,74,0.1)"
+              : "rgba(71,85,105,0.06)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(s.ptr.x, s.ptr.y, s.tgt.r + 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(s.ptr.x - 12, s.ptr.y);
+            ctx.lineTo(s.ptr.x + 12, s.ptr.y);
+            ctx.moveTo(s.ptr.x, s.ptr.y - 12);
+            ctx.lineTo(s.ptr.x, s.ptr.y + 12);
+            ctx.stroke();
+            ctx.restore();
+          }
+          // タイマー表示
+          const sec = Math.ceil(remain / 1000);
+          ctx.save();
+          ctx.fillStyle = "rgba(255,255,255,0.88)";
+          ctx.strokeStyle = "rgba(225,29,72,0.15)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          const bx = s.w / 2 - 60,
+            by = 8,
+            bw = 120,
+            bh = 42,
+            br = 12;
+          ctx.moveTo(bx + br, by);
+          ctx.arcTo(bx + bw, by, bx + bw, by + bh, br);
+          ctx.arcTo(bx + bw, by + bh, bx, by + bh, br);
+          ctx.arcTo(bx, by + bh, bx, by, br);
+          ctx.arcTo(bx, by, bx + bw, by, br);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = "#be123c";
+          ctx.textAlign = "center";
+          ctx.font = "700 13px sans-serif";
+          ctx.fillText("残り時間", s.w / 2, 26);
+          ctx.font = "800 22px sans-serif";
+          ctx.fillText(sec + "秒", s.w / 2, 46);
+          ctx.restore();
+          // 下部ヒント
+          ctx.fillStyle = "rgba(127,29,29,0.7)";
+          ctx.textAlign = "center";
+          ctx.font = "600 13px sans-serif";
+          ctx.fillText("赤い的を指で追い続けてください", s.w / 2, s.h - 10);
+        };
+
+        const finish = () => {
+          if (s.done) return;
+          s.done = true;
+          s.run = false;
+          cancelAnimationFrame(s.raf);
+          canvas.removeEventListener("mousemove", onMove);
+          canvas.removeEventListener("mouseleave", () => {
+            s.ptr.on = false;
+          });
+          canvas.removeEventListener("touchstart", onTouch);
+          canvas.removeEventListener("touchmove", onTouch);
+          canvas.removeEventListener("touchend", () => {
+            s.ptr.on = false;
+          });
+          window.removeEventListener("resize", resize);
+
+          const acc = s.total ? (s.hit / s.total) * 100 : 0;
+          score = s.hit;
+          const emoji = acc >= 85 ? "🎯" : acc >= 60 ? "👏" : "💪";
+          playComplete();
+          endGameWithResult(
+            "追跡トレーニング終了！",
+            `命中率: ${acc.toFixed(1)}%\nスコア: ${s.hit}点\n${acc >= 80 ? "素晴らしい追跡力です！" : acc >= 50 ? "もう少しで上級者！" : "毎日続けて目を鍛えましょう！"}`,
+            emoji,
+          );
+        };
+
+        const loop = (ts) => {
+          if (!s.run) return;
+          if (!s.start) {
+            s.start = ts;
+            s.last = ts;
+          }
+          const dt = Math.min(0.05, (ts - s.last) / 1000);
+          s.last = ts;
+          const elapsed = ts - s.start;
+          const remain = Math.max(0, dur - elapsed);
+          if (remain <= 0) {
+            finish();
+            return;
+          }
+
+          const lv = Math.floor(elapsed / 5000);
+          const spd = 70 + lv * 25;
+          const minX = s.tgt.r + pad,
+            maxX = s.w - s.tgt.r - pad;
+          const minY = s.tgt.r + pad + 28,
+            maxY = s.h - s.tgt.r - pad;
+          s.tgt.x += s.tgt.dx * spd * dt;
+          s.tgt.y += s.tgt.dy * spd * dt;
+          if (s.tgt.x <= minX) {
+            s.tgt.x = minX;
+            s.tgt.dx = Math.abs(s.tgt.dx);
+          }
+          if (s.tgt.x >= maxX) {
+            s.tgt.x = maxX;
+            s.tgt.dx = -Math.abs(s.tgt.dx);
+          }
+          if (s.tgt.y <= minY) {
+            s.tgt.y = minY;
+            s.tgt.dy = Math.abs(s.tgt.dy);
+          }
+          if (s.tgt.y >= maxY) {
+            s.tgt.y = maxY;
+            s.tgt.dy = -Math.abs(s.tgt.dy);
+          }
+          const len = Math.hypot(s.tgt.dx, s.tgt.dy) || 1;
+          s.tgt.dx /= len;
+          s.tgt.dy /= len;
+
+          s.trail.push({ x: s.tgt.x, y: s.tgt.y });
+          if (s.trail.length > trailN) s.trail.shift();
+
+          s.total++;
+          if (
+            s.ptr.on &&
+            Math.hypot(s.ptr.x - s.tgt.x, s.ptr.y - s.tgt.y) <= s.tgt.r + 6
+          )
+            s.hit++;
+
+          scoreEl.textContent = `命中 ${s.hit} (${s.total ? ((s.hit / s.total) * 100).toFixed(0) : 0}%)`;
+          draw(remain);
+          s.raf = requestAnimationFrame(loop);
+        };
+
+        const onMove = (e) => setPtr(e.clientX, e.clientY);
+        const onTouch = (e) => {
+          e.preventDefault();
+          if (e.touches[0]) setPtr(e.touches[0].clientX, e.touches[0].clientY);
+        };
+
+        canvas.addEventListener("mousemove", onMove);
+        canvas.addEventListener("mouseleave", () => {
+          s.ptr.on = false;
+        });
+        canvas.addEventListener("touchstart", onTouch, { passive: false });
+        canvas.addEventListener("touchmove", onTouch, { passive: false });
+        canvas.addEventListener("touchend", () => {
+          s.ptr.on = false;
+        });
+        window.addEventListener("resize", resize);
+
+        resize();
+        draw(dur);
+        s.raf = requestAnimationFrame(loop);
+      }
+
+      // =============================================
+      // ゲーム2: ピント合わせ（改善版）
+      // =============================================
+      function startFocusGame() {
+        const root = document.getElementById("gameContent");
+        const scoreEl = document.getElementById("score");
+        root.innerHTML = "";
+
+        const rounds = ["far", "near", "far", "near", "far", "near"];
+        const roundMs = 5000;
+        const totalMs = rounds.length * roundMs;
+        const timers = new Set();
+        const st = {
+          idx: 0,
+          score: 0,
+          reacted: false,
+          ended: false,
+          promptAt: 0,
+          roundEnd: 0,
+          totalStart: Date.now(),
+          reactions: [],
+          misses: 0,
+        };
+        score = 0;
+
+        const addT = (id) => {
+          timers.add(id);
+          return id;
+        };
+        const clearT = () => {
+          for (const id of timers) {
+            clearTimeout(id);
+            clearInterval(id);
+          }
+          timers.clear();
+        };
+        const scoreFor = (ms) =>
+          ms < 500 ? 100 : ms < 1000 ? 75 : ms < 2000 ? 50 : 25;
+
+        // DOM構築
+        const wrap = document.createElement("div");
+        wrap.className =
+          "w-full max-w-2xl mx-auto flex flex-col gap-4 select-none";
+
+        const head = document.createElement("div");
+        head.className = "flex items-center justify-between gap-3";
+        const titleEl = document.createElement("div");
+        titleEl.className = "text-xl font-bold text-slate-800";
+        titleEl.textContent = "フォーカスゲーム";
+        const roundEl = document.createElement("div");
+        roundEl.className =
+          "text-sm font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700";
+        roundEl.textContent = "ラウンド 1 / 6";
+        head.append(titleEl, roundEl);
+
+        const board = document.createElement("div");
+        board.className =
+          "relative overflow-hidden rounded-3xl min-h-[340px] md:min-h-[380px] border border-white/60 shadow-xl";
+        board.style.cssText =
+          "touch-action:manipulation;cursor:pointer;transition:transform 0.8s ease";
+
+        const farBg = document.createElement("div");
+        farBg.className = "absolute inset-0";
+        farBg.style.cssText =
+          "background:linear-gradient(135deg,#1d4ed8,#38bdf8 55%,#dbeafe);transition:opacity 0.8s ease";
+        const nearBg = document.createElement("div");
+        nearBg.className = "absolute inset-0";
+        nearBg.style.cssText =
+          "background:linear-gradient(135deg,#f97316,#fb923c 55%,#ffedd5);transition:opacity 0.8s ease";
+
+        const body = document.createElement("div");
+        body.className =
+          "relative z-10 min-h-[340px] md:min-h-[380px] flex flex-col items-center justify-center text-center p-6 gap-5";
+
+        const instruction = document.createElement("div");
+        instruction.className =
+          "text-3xl md:text-4xl font-black tracking-wide text-white drop-shadow-lg";
+        instruction.textContent = "遠くを見て！";
+
+        const target = document.createElement("div");
+        target.className = "font-black text-white/95";
+        target.textContent = "ピント";
+        target.style.cssText =
+          "font-size:clamp(2.8rem,10vw,5.2rem);transform:scale(1.35);letter-spacing:0.28em;text-shadow:0 8px 24px rgba(0,0,0,0.22);transition:transform 0.8s ease,letter-spacing 0.8s ease";
+
+        const guide = document.createElement("div");
+        guide.className = "text-white/90 text-sm md:text-base font-medium";
+        guide.textContent = "合図が出たら、できるだけ早く画面をタップ！";
+
+        const reaction = document.createElement("div");
+        reaction.className =
+          "px-4 py-2 rounded-full bg-white/20 backdrop-blur text-white font-semibold";
+        reaction.textContent = "反応を待っています…";
+
+        const foot = document.createElement("div");
+        foot.className = "flex items-center justify-between gap-3 text-sm";
+        const countdown = document.createElement("div");
+        countdown.className =
+          "px-3 py-2 rounded-xl bg-slate-900 text-white font-semibold";
+        countdown.textContent = "切替まで 5.0秒";
+        const total = document.createElement("div");
+        total.className =
+          "px-3 py-2 rounded-xl bg-white text-slate-700 font-semibold shadow";
+        total.textContent = "残り 30秒";
+        foot.append(countdown, total);
+
+        body.append(instruction, target, guide, reaction);
+        board.append(farBg, nearBg, body);
+        wrap.append(head, board, foot);
+        root.appendChild(wrap);
+
+        const setMode = (mode) => {
+          const far = mode === "far";
+          instruction.textContent = far ? "遠くを見て！" : "近くを見て！";
+          guide.textContent = far
+            ? "遠くを見るイメージで、合図に反応してください"
+            : "近くを見るイメージで、合図に反応してください";
+          farBg.style.opacity = far ? "1" : "0";
+          nearBg.style.opacity = far ? "0" : "1";
+          target.style.transform = far ? "scale(1.35)" : "scale(0.72)";
+          target.style.letterSpacing = far ? "0.28em" : "0.08em";
+        };
+
+        const beat = () => {
+          board.style.transform = "scale(0.985)";
+          setTimeout(() => {
+            if (!st.ended) board.style.transform = "scale(1)";
+          }, 90);
+        };
+
+        const onTap = () => {
+          if (st.ended || st.reacted) return;
+          st.reacted = true;
+          const ms = Math.round(performance.now() - st.promptAt);
+          const pts = scoreFor(ms);
+          st.score += pts;
+          st.reactions.push(ms);
+          score = st.score;
+          reaction.textContent = `反応時間 ${ms}ms！ +${pts}点`;
+          scoreEl.textContent = `${st.score}点 | 反応: ${ms}ms`;
+          playCorrect();
+          beat();
+        };
+
+        const finish = () => {
+          if (st.ended) return;
+          st.ended = true;
+          clearT();
+          board.removeEventListener("pointerdown", onTap);
+          const avg = st.reactions.length
+            ? Math.round(
+                st.reactions.reduce((a, b) => a + b, 0) / st.reactions.length,
+              )
+            : null;
+          const emoji = st.score >= 500 ? "🏆" : st.score >= 350 ? "🌟" : "👀";
+          playComplete();
+          endGameWithResult(
+            "フォーカスゲーム結果",
+            `平均反応時間: ${avg ?? "記録なし"}ms\n合計スコア: ${st.score}点\n成功: ${st.reactions.length}/6 ラウンド`,
+            emoji,
+          );
+        };
+
+        const startRound = (idx) => {
+          if (st.ended) return;
+          if (idx >= rounds.length) {
+            finish();
+            return;
+          }
+          st.idx = idx;
+          st.reacted = false;
+          st.promptAt = performance.now();
+          st.roundEnd = Date.now() + roundMs;
+          roundEl.textContent = `ラウンド ${idx + 1} / ${rounds.length}`;
+          reaction.textContent = "合図に反応！";
+          scoreEl.textContent = `${st.score}点`;
+          setMode(rounds[idx]);
+
+          const tick = () => {
+            if (st.ended) return;
+            const left = Math.max(0, st.roundEnd - Date.now());
+            const totalLeft = Math.max(
+              0,
+              totalMs - (Date.now() - st.totalStart),
+            );
+            countdown.textContent = `切替まで ${(left / 1000).toFixed(1)}秒`;
+            total.textContent = `残り ${Math.ceil(totalLeft / 1000)}秒`;
+          };
+          tick();
+          addT(setInterval(tick, 100));
+          addT(
+            setTimeout(() => {
+              if (st.ended) return;
+              clearT();
+              if (!st.reacted) {
+                st.misses++;
+                reaction.textContent = "未反応… 次に集中！";
+                playWrong();
+              }
+              if (idx + 1 >= rounds.length) {
+                finish();
+                return;
+              }
+              startRound(idx + 1);
+            }, roundMs),
+          );
+        };
+
+        board.addEventListener("pointerdown", onTap, { passive: true });
+        setMode("far");
+        scoreEl.textContent = "0点";
+        startRound(0);
+      }
+
+      // =============================================
+      // ゲーム3: ランドルト環（完全書き直し）
+      // =============================================
+      function startLandoltGame() {
+        const dirs = ["up", "down", "left", "right"];
+        const labels = {
+          up: "↑ 上",
+          down: "↓ 下",
+          left: "← 左",
+          right: "→ 右",
+        };
+        const arrows = { up: "↑", down: "↓", left: "←", right: "→" };
+        let level = 1,
+          maxLevel = 10,
+          streak = 0;
+        let correctDir = null;
+        score = 0;
+
+        const container = document.getElementById("gameContent");
+        const scoreEl = document.getElementById("score");
+
+        function render(direction) {
+          const size = 130 - (level - 1) * 10;
+          const stroke = Math.max(5, size / 10);
+          const radius = Math.max(1, (size - stroke) / 2);
+          const gapAngle = Math.PI / 3;
+
+          const offsetAngles = {
+            up: -Math.PI / 2,
+            down: Math.PI / 2,
+            left: Math.PI,
+            right: 0,
+          };
+          const center = offsetAngles[direction];
+          const startAngle = center + gapAngle / 2;
+          const endAngle = center - gapAngle / 2 + 2 * Math.PI;
+
+          container.innerHTML = "";
+          const wrap = document.createElement("div");
+          wrap.style.cssText =
+            "display:flex;flex-direction:column;align-items:center;gap:20px;padding:16px";
+
+          const info = document.createElement("div");
+          info.style.cssText = "font-size:18px;font-weight:bold;color:#15803d";
+          info.textContent = `レベル ${level} / ${maxLevel}`;
+          wrap.appendChild(info);
+
+          // ランドルト環を描画
+          const canvas = document.createElement("canvas");
+          const dpr = Math.max(1, window.devicePixelRatio || 1);
+          const canvasSize = size + 20;
+          canvas.width = canvasSize * dpr;
+          canvas.height = canvasSize * dpr;
+          canvas.style.cssText = `width:${canvasSize}px;height:${canvasSize}px`;
+          const ctx = canvas.getContext("2d");
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.lineWidth = stroke;
+          ctx.strokeStyle = "#1e293b";
+          ctx.lineCap = "butt";
+          ctx.beginPath();
+          ctx.arc(canvasSize / 2, canvasSize / 2, radius, startAngle, endAngle);
+          ctx.stroke();
+
+          // 切れ目の位置に小さな矢印（ヒント）
+          wrap.appendChild(canvas);
+
+          const hint = document.createElement("p");
+          hint.style.cssText = "font-size:14px;color:#6b7280";
+          hint.textContent = "Cの切れ目がどの方角を向いている？";
+          wrap.appendChild(hint);
+
+          const btnRow = document.createElement("div");
+          btnRow.style.cssText =
+            "display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:320px";
+
+          for (const dir of dirs) {
+            const btn = document.createElement("button");
+            btn.textContent = labels[dir];
+            btn.dataset.dir = dir;
+            btn.style.cssText =
+              "padding:12px 8px;font-size:16px;border:2px solid #d1d5db;border-radius:12px;cursor:pointer;background:#f9fafb;transition:all 0.15s";
+            btn.addEventListener("pointerdown", () => checkAnswer(dir));
+            btnRow.appendChild(btn);
+          }
+          wrap.appendChild(btnRow);
+          container.appendChild(wrap);
+        }
+
+        function flash(color) {
+          container.style.transition = "background-color 0.15s";
+          container.style.backgroundColor = color;
+          setTimeout(() => {
+            container.style.backgroundColor = "";
+          }, 350);
+        }
+
+        function checkAnswer(picked) {
+          // ボタン無効化（連続タップ防止）
+          container.querySelectorAll("button").forEach((b) => {
+            b.disabled = true;
+            b.style.opacity = "0.5";
+            b.style.cursor = "default";
+          });
+
+          if (picked === correctDir) {
+            streak++;
+            const bonus = streak > 1 ? streak * 20 : 0;
+            score += 100 + bonus;
+            flash("#bbf7d0");
+            playCorrect();
+          } else {
+            streak = 0;
+            flash("#fecaca");
+            playWrong();
+          }
+          scoreEl.textContent = score;
+          document.getElementById("score").textContent = score;
+
+          setTimeout(() => {
+            level++;
+            if (level > maxLevel) {
+              playComplete();
+              endGameWithResult(
+                "ランドルト環クリア！",
+                `最終スコア: ${score}点\n10レベル全問突破！\n${score >= 900 ? "完璧な視力です！" : score >= 600 ? "素晴らしい集中力！" : "毎日練習して視力を鍛えよう！"}`,
+                "🥳",
+              );
+            } else {
+              nextRound();
+            }
+          }, 500);
+        }
+
+        function nextRound() {
+          correctDir = dirs[Math.floor(Math.random() * dirs.length)];
+          render(correctDir);
+        }
+
+        scoreEl.textContent = "0";
+        nextRound();
+      }
+
+      // =============================================
+      // 結果表示
+      // =============================================
+      function endGameWithResult(title, text, emoji) {
+        showScreen("resultScreen");
+        document.getElementById("resultEmoji").textContent = emoji;
+        document.getElementById("resultTitle").textContent = title;
+        document.getElementById("resultText").textContent = text;
+      }
+
+      function saveScoreAndReturn() {
+        playClick();
+        let history = JSON.parse(localStorage.getItem("eyeScore") || "[]");
+        history.unshift({
+          date: new Date().toLocaleDateString("ja-JP"),
+          game: currentGame,
+          score: score,
+        });
+        if (history.length > 30) history = history.slice(0, 30);
+        localStorage.setItem("eyeScore", JSON.stringify(history));
+        showHome();
+      }
+
+      function endGame() {
+        showHome();
+      }
+
+      // =============================================
+      // 20-20-20 タイマー（視覚化版）
+      // =============================================
+      function start2020Timer() {
+        playClick();
+        const overlay = document.createElement("div");
+        overlay.className = "timer-overlay";
+
+        const label = document.createElement("p");
+        label.style.cssText =
+          "font-size:20px;font-weight:700;margin-bottom:24px;opacity:0.9";
+        label.textContent = "20秒間、遠くを見てリラックス";
+
+        const circleWrap = document.createElement("div");
+        circleWrap.className = "timer-circle";
+
+        const circumference = 2 * Math.PI * 100;
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg",
+        );
+        svg.setAttribute("width", "240");
+        svg.setAttribute("height", "240");
+        svg.setAttribute("viewBox", "0 0 240 240");
+        const bgCircle = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "circle",
+        );
+        bgCircle.setAttribute("cx", "120");
+        bgCircle.setAttribute("cy", "120");
+        bgCircle.setAttribute("r", "100");
+        bgCircle.setAttribute("fill", "none");
+        bgCircle.setAttribute("stroke", "rgba(255,255,255,0.2)");
+        bgCircle.setAttribute("stroke-width", "8");
+        const fgCircle = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "circle",
+        );
+        fgCircle.setAttribute("cx", "120");
+        fgCircle.setAttribute("cy", "120");
+        fgCircle.setAttribute("r", "100");
+        fgCircle.setAttribute("fill", "none");
+        fgCircle.setAttribute("stroke", "white");
+        fgCircle.setAttribute("stroke-width", "8");
+        fgCircle.setAttribute("stroke-linecap", "round");
+        fgCircle.setAttribute("stroke-dasharray", circumference);
+        fgCircle.setAttribute("stroke-dashoffset", "0");
+        svg.appendChild(bgCircle);
+        svg.appendChild(fgCircle);
+
+        const number = document.createElement("div");
+        number.className = "timer-number";
+        number.textContent = "20";
+
+        circleWrap.appendChild(svg);
+        circleWrap.appendChild(number);
+
+        const breathing = document.createElement("p");
+        breathing.style.cssText =
+          "font-size:24px;font-weight:700;margin-top:24px;min-height:36px";
+        breathing.textContent = "息を吸って…";
+
+        const cancel = document.createElement("button");
+        cancel.textContent = "キャンセル";
+        cancel.style.cssText =
+          "margin-top:32px;padding:12px 32px;border:2px solid rgba(255,255,255,0.5);border-radius:16px;color:white;background:transparent;font-size:16px;cursor:pointer";
+        cancel.addEventListener("pointerdown", () => {
+          clearInterval(id);
+          overlay.remove();
+        });
+
+        overlay.append(label, circleWrap, breathing, cancel);
+        document.body.appendChild(overlay);
+
+        let sec = 20;
+        const start = Date.now();
+        let breathPhase = 0;
+
+        const id = setInterval(() => {
+          const elapsed = (Date.now() - start) / 1000;
+          const left = Math.max(0, 20 - elapsed);
+          sec = Math.ceil(left);
+          number.textContent = sec;
+
+          const progress = elapsed / 20;
+          fgCircle.setAttribute(
+            "stroke-dashoffset",
+            (circumference * progress).toString(),
+          );
+
+          // 呼吸ガイド（5秒ごとに切り替え）
+          const newPhase = Math.floor(elapsed / 5) % 2;
+          if (newPhase !== breathPhase) {
+            breathPhase = newPhase;
+            breathing.textContent =
+              breathPhase === 0 ? "息を吸って…" : "息を吐いて…";
+          }
+
+          if (left > 0 && left <= 20) playTick();
+
+          if (left <= 0) {
+            clearInterval(id);
+            number.textContent = "✓";
+            breathing.textContent = "お疲れ様！目が休まりました 👍";
+            playComplete();
+            setTimeout(() => overlay.remove(), 2000);
+          }
+        }, 1000);
+      }
+
+      // =============================================
+      // スコア履歴・連続日数
+      // =============================================
+      function updateHomeStats() {
+        const history = JSON.parse(localStorage.getItem("eyeScore") || "[]");
+
+        // 連続日数計算
+        const streakEl = document.getElementById("streak");
+        if (history.length === 0) {
+          streakEl.textContent = "まだ記録がありません";
+        } else {
+          const today = new Date();
+          const dates = [...new Set(history.map((h) => h.date))];
+          let streak = 0;
+          for (let i = 0; i < 365; i++) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            const ds = d.toLocaleDateString("ja-JP");
+            if (dates.includes(ds)) streak++;
+            else break;
+          }
+          streakEl.textContent =
+            streak > 0 ? `連続${streak}日目` : "今日から始めよう！";
+        }
+
+        // 直近7日分のバーチャート
+        const historySection = document.getElementById("scoreHistory");
+        const barsContainer = document.getElementById("scoreBars");
+        if (history.length === 0) {
+          historySection.classList.add("hidden");
+          return;
+        }
+
+        historySection.classList.remove("hidden");
+        const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
+        const last7 = history.slice(0, 7).reverse();
+        const maxScore = Math.max(...last7.map((h) => h.score || 0), 1);
+
+        barsContainer.innerHTML = "";
+        last7.forEach((h) => {
+          const col = document.createElement("div");
+          col.className = "flex-1 flex flex-col items-center gap-1";
+          const bar = document.createElement("div");
+          const pct = Math.max(8, ((h.score || 0) / maxScore) * 100);
+          bar.className = "score-bar w-full";
+          bar.style.cssText = `height:${pct}%;background:linear-gradient(to top,#22c55e,#86efac)`;
+          const label = document.createElement("span");
+          label.className = "text-xs text-gray-500";
+          // 日付から曜日を抽出
+          const dateObj = new Date(h.date);
+          label.textContent = dayNames[dateObj.getDay()] || "";
+          const val = document.createElement("span");
+          val.className = "text-xs font-bold text-green-700";
+          val.textContent = h.score || 0;
+          col.append(val, bar, label);
+          barsContainer.appendChild(col);
+        });
+      }
+
+      // =============================================
+      // 初期化
+      // =============================================
+      window.onload = () => {
+        updateHomeStats();
+        console.log(
+          "%cめめトレ！ 起動しました👁️",
+          "color:#22c55e;font-size:18px",
+        );
+      };
+    </script>
+  </body>
+</html>
